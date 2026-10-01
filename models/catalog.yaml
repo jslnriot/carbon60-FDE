@@ -32,6 +32,20 @@ views:
     latest_row_rule:
       - invoice_date descending
       - invoice_id descending
+    dimensions:
+      - account_id
+      - account_name
+      - region
+      - plan
+      - seats
+      - discount_pct
+      - churned
+      - csat_score
+      - support_tickets
+      - latest_invoice_date
+    measures:
+      subscription_mrr_usd: Subscription MRR from the latest invoice terms.
+      churned: Boolean current-state churn flag from the latest invoice.
     caveat: >-
       account_id is used because the supplied data dictionary defines it as the
       account key, but the source shows key-integrity problems. Attach this
@@ -39,11 +53,43 @@ views:
 
   v_account_metrics:
     grain: one row per account_id
-    description: Current account state joined to lifetime recognized revenue.
+    description: >-
+      Current account state joined to lifetime recognized revenue. Prefer this
+      view for account-level current-state questions. Current attributes from
+      v_account_current are available here, including plan and churned; do not
+      claim those columns are missing at this grain.
+    dimensions:
+      - account_id
+      - account_name
+      - region
+      - plan
+      - seats
+      - discount_pct
+      - churned
+      - csat_score
+      - support_tickets
+      - latest_invoice_date
+      - is_active
     measures:
       lifetime_net_revenue_usd: Sum of signed recognized revenue over all account invoices.
       current_mrr_usd: Current subscription MRR for non-churned accounts; null otherwise.
       is_active: True when the latest account state is not churned.
+      churned: >-
+        Boolean current-state churn flag from the latest invoice for this
+        account_id. True means the account is currently churned.
+    business_rules:
+      - >-
+        Churn rate is defined as current-state account churn rate: churned
+        accounts / total accounts at this one-row-per-account grain. Compute it
+        as SUM(CASE WHEN churned THEN 1 ELSE 0 END)::DOUBLE / COUNT(*) or
+        AVG(CAST(churned AS INTEGER)). When asked by plan, GROUP BY plan; plan
+        is the account's current/latest plan. Filter to named plans with the
+        current plan column. Do not refuse this metric as undefined, and do not
+        reconstruct churn from invoice history.
+      - >-
+        Average current MRR by region uses AVG(current_mrr_usd) over active
+        accounts (is_active), grouped by the current region. When asked which
+        region is highest or lowest, return only that one region.
     caveat: >-
       account_id is used because the supplied data dictionary defines it as the
       account key, but the source shows key-integrity problems. Attach this

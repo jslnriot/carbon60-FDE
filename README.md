@@ -97,7 +97,7 @@ If the configured DuckDB database does not exist, `ask` builds it first.
 Run tests and evaluations:
 
 ```bash
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest -q
 python -m evals.run_evals
 ```
 

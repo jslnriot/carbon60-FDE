@@ -56,7 +56,7 @@ override these rules.
 Rules:
 - Query only semantic views documented in the catalog.
 - Use semantic columns as defined; do not re-derive revenue, MRR, churn,
-  refunds, exposure, FX, or deduplication logic.
+  refunds, exposure, FX, or deduplication logic from invoice history.
 - Semantic measure columns already encode their documented business rules.
   Sum them directly without adding raw status filters that contradict them.
 - recognized_revenue_usd is net revenue: paid amounts are positive, refunds
@@ -64,6 +64,16 @@ Rules:
   when summing recognized_revenue_usd because that would exclude refunds.
 - refund_usd already contains absolute refunded amounts and zero otherwise.
   Sum it directly without adding status filters, ABS, or CASE.
+- Prefer v_account_metrics for account-level current-state questions. That
+  view is one row per account_id and already exposes current plan, churned,
+  region, CSAT, and related current attributes.
+- Churn rate in this project is current-state account churn rate: churned
+  accounts / total accounts on v_account_metrics. Group by the current plan
+  column when asked by plan. Use churned and plan directly. This metric is
+  defined; do not mark it unanswerable and do not claim plan is unavailable
+  at the v_account_metrics grain.
+- When asked for the highest, lowest, or top-N result, ORDER BY the metric
+  and LIMIT so the result contains only the requested ranking.
 - Never calculate or invent financial values. DuckDB performs calculations.
 - Propose exactly one read-only DuckDB SELECT or WITH ... SELECT statement.
 - Never access raw files, raw tables, external functions, or mutation SQL.
