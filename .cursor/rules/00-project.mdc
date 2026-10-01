@@ -1,0 +1,20 @@
+---
+description: Project-wide rules for the CloudNova Forward Deployed Engineer take-home
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Project contract
+
+- This is a timeboxed Forward Deployed Engineer take-home for CloudNova.
+- `/specs` is the source of truth for behavior.
+- `docs/decisions.md` contains locked implementation decisions.
+- Do not edit a spec or a locked decision unless the user explicitly asks.
+- Do not invent business rules that are not in the specs or business context.
+- Stay inside the files named in the current prompt.
+- Prefer the smallest implementation that satisfies the acceptance checks.
+- Do not add UI, cloud deployment, Docker, frameworks, or extra abstractions unless explicitly requested.
+- Do not commit secrets. `.env` and DuckDB database files must remain untracked.
+- When asked for a plan first, show a short plan and wait for approval before changing files.
+- Before declaring a step complete, run the acceptance commands named in the prompt and report the actual results.
+- If a requirement is ambiguous or the data contradicts the written rule, surface it instead of silently choosing a new interpretation.

@@ -1,0 +1,29 @@
+cases:
+  - id: E1
+    question: What was our total recognized revenue in USD for paid invoices in 2024?
+    reference: E1
+    comparison: scalar_usd
+
+  - id: E2
+    question: Which region has the highest average MRR per account?
+    reference: E2
+    comparison: winning_region
+
+  - id: E3
+    question: What's the churn rate among Enterprise accounts vs Starter?
+    reference: E3
+    comparison: churn_rates
+
+  - id: E4
+    question: How much have we given back in refunds?
+    reference: E4
+    comparison: scalar_usd
+
+  - id: E5
+    question: Why did Acme Corp cancel?
+    comparison: answerable_false
+
+  - id: E6
+    question: What was our recognized revenue in 2024, and cite the invoice_ids that contributed to the total?
+    comparison: expected_failure
+    reason: v1 does not provide full row-level provenance for aggregate answers

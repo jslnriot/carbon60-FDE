@@ -1,0 +1,23 @@
+---
+description: Rules for the natural-language-to-SQL agent and SQL guardrail
+globs: ["app/agent.py", "app/guardrail.py", "app/format.py", "app/__main__.py", "tests/test_guardrail.py", "models/**/*"]
+alwaysApply: false
+---
+
+# NL-to-SQL rules
+
+- Implement `specs/query-agent.md` exactly.
+- The LLM interprets the user's question; deterministic views own the business logic.
+- The LLM may query only views listed in `models/catalog.yaml`.
+- Do not let the LLM re-derive revenue, MRR, churn, refund, FX, or dedup rules.
+- Use a structured Pydantic response from the OpenAI call.
+- Do not make an extra LLM call to summarize database results.
+- Never let the model invent or restate numeric results that were not returned by DuckDB.
+- Validate generated SQL with `sqlglot` before execution.
+- Permit exactly one read-only SELECT query, including `WITH ... SELECT`.
+- Reject references to tables/views outside the allowlist.
+- Inject a LIMIT when absent, capped by `query.max_rows` from `config.yaml`.
+- Open DuckDB read-only for query execution and disable external access.
+- Print the generated SQL with every successful answer.
+- Print assumptions and view caveats with every answer.
+- Missing keys, model errors, guardrail rejections, SQL errors, and empty results must produce clear user-facing messages.

@@ -1,0 +1,25 @@
+---
+description: Rules for the deterministic cleaning and modeling pipeline
+globs: ["app/pipeline.py", "tests/test_pipeline.py", "models/**/*"]
+alwaysApply: false
+---
+
+# Data pipeline rules
+
+- Implement `specs/data-model.md` exactly.
+- Read the raw CSV with every source column as a string:
+  `dtype=str, keep_default_na=False`.
+- Preserve region value `NA`; never allow pandas to interpret it as null.
+- Add and preserve `source_row`.
+- Load constants and mappings from `config.yaml`; do not duplicate business constants in Python.
+- Never silently drop a bad source row.
+- Hard validation failures go to quarantine with a machine-readable reason.
+- Data-quality anomalies that the spec says to keep must be flagged, not removed.
+- Deduplication order is fixed:
+  1. exact duplicates,
+  2. normalization-only duplicates,
+  3. remaining invoice_id conflicts resolved using the configured status precedence.
+- Log every resolved conflict to `dq_conflicts`.
+- FX conversion follows the locked decision in `docs/decisions.md`; do not infer a different direction from the wording of the brief.
+- Business metrics must be deterministic. The LLM does not calculate revenue, MRR, churn, refunds, or exposure.
+- Tests must cover the high-risk rules: `NA` region preservation, status normalization, FX reconciliation, dedup precedence, and date parsing.

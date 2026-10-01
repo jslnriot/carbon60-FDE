@@ -1,0 +1,50 @@
+views:
+  v_revenue_lines:
+    grain: one row per clean invoice
+    description: Invoice-level revenue, refund, and payment-exposure measures.
+    dimensions:
+      - invoice_id
+      - account_id
+      - account_name
+      - region
+      - plan
+      - status
+      - invoice_date
+      - invoice_year
+      - invoice_month
+    measures:
+      amount_usd: Normalized invoice amount using the configured fixed FX rate.
+      recognized_revenue_usd: >-
+        Net recognized revenue measure: paid invoices contribute positive
+        revenue, refunded invoices contribute negative revenue, and all other
+        statuses contribute zero. Sum this measure directly. Do not add a
+        status = 'paid' filter, even when the stakeholder says "paid invoices",
+        because that would incorrectly exclude refunds.
+      refund_usd: >-
+        Absolute refunded amount with refund status logic already encoded; zero
+        for other statuses. Sum this measure directly without recreating the
+        rule using status filters, ABS, or CASE.
+      exposed_usd: Absolute amount for pending and failed invoices; zero otherwise.
+
+  v_account_current:
+    grain: one row per account_id
+    description: Current account attributes from the latest canonical invoice.
+    latest_row_rule:
+      - invoice_date descending
+      - invoice_id descending
+    caveat: >-
+      account_id is used because the supplied data dictionary defines it as the
+      account key, but the source shows key-integrity problems. Attach this
+      caveat to account-level answers.
+
+  v_account_metrics:
+    grain: one row per account_id
+    description: Current account state joined to lifetime recognized revenue.
+    measures:
+      lifetime_net_revenue_usd: Sum of signed recognized revenue over all account invoices.
+      current_mrr_usd: Current subscription MRR for non-churned accounts; null otherwise.
+      is_active: True when the latest account state is not churned.
+    caveat: >-
+      account_id is used because the supplied data dictionary defines it as the
+      account key, but the source shows key-integrity problems. Attach this
+      caveat to account-level answers.
